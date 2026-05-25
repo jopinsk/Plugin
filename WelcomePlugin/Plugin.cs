@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using LabApi.Events.Arguments.PlayerEvents;
 using LabApi.Events.Arguments.ServerEvents;
 using LabApi.Events.Handlers;
@@ -31,7 +33,10 @@ namespace WelcomePlugin
                 return;
             }
 
-            string dir = this.GetConfigDirectory().FullName;
+            string asmDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+                            ?? AppDomain.CurrentDomain.BaseDirectory
+                            ?? Directory.GetCurrentDirectory();
+            string dir = Path.Combine(asmDir, "PlayerStatsTracker_data");
             _storage = new StatsStorage(dir, Config.PrettyPrintJson);
             _storage.Load();
 
@@ -142,9 +147,9 @@ namespace WelcomePlugin
                 {
                     PlayerStats ats = _storage.GetOrCreate(attacker.UserId, attacker.Nickname);
                     ats.Kills++;
-                    string vRole = victim.RoleType.ToString();
+                    string vTeam = SafeTeamName(victim);
                     int kCount;
-                    ats.KillsByVictimRole[vRole] = ats.KillsByVictimRole.TryGetValue(vRole, out kCount) ? kCount + 1 : 1;
+                    ats.KillsByVictimRole[vTeam] = ats.KillsByVictimRole.TryGetValue(vTeam, out kCount) ? kCount + 1 : 1;
 
                     if (Config.TrackFriendlyFire && SameTeamSafe(attacker, victim))
                         ats.FriendlyFireKills++;
@@ -209,8 +214,14 @@ namespace WelcomePlugin
 
         private static bool SameTeamSafe(Player a, Player b)
         {
-            try { return a.Team == b.Team; }
+            try { return a.Team.Equals(b.Team); }
             catch { return false; }
+        }
+
+        private static string SafeTeamName(Player p)
+        {
+            try { return p.Team.ToString(); }
+            catch { return "Unknown"; }
         }
 
         private static long Now()
