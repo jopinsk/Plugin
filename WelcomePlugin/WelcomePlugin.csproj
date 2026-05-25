@@ -8,10 +8,36 @@
     <Nullable>disable</Nullable>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <GameLibsUrl>https://github.com/jopinsk/Plugin/releases/download/655/dll_libs.zip</GameLibsUrl>
+    <GameLibsDir>$(MSBuildThisFileDirectory)libs</GameLibsDir>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Northwood.LabAPI" Version="1.1.6.1" />
   </ItemGroup>
+
+  <!-- 1) Download and unzip the SCP:SL game reference assemblies before resolving references. -->
+  <Target Name="DownloadGameLibs"
+          BeforeTargets="ResolveAssemblyReferences"
+          Condition="!Exists('$(GameLibsDir)\Assembly-CSharp.dll')">
+    <MakeDir Directories="$(GameLibsDir)" />
+    <Message Importance="high" Text="Downloading game libs from $(GameLibsUrl) ..." />
+    <Exec Command="curl -fL -o &quot;$(GameLibsDir)\dll_libs.zip&quot; &quot;$(GameLibsUrl)&quot;" />
+    <Exec Command="tar -xf &quot;$(GameLibsDir)\dll_libs.zip&quot; -C &quot;$(GameLibsDir)&quot;" />
+    <Delete Files="$(GameLibsDir)\dll_libs.zip" />
+  </Target>
+
+  <!-- 2) Dynamically reference every DLL extracted into libs/ -->
+  <Target Name="AddGameLibReferences"
+          BeforeTargets="ResolveAssemblyReferences"
+          DependsOnTargets="DownloadGameLibs">
+    <ItemGroup>
+      <_GameLibDll Include="$(GameLibsDir)\**\*.dll" />
+      <Reference Include="@(_GameLibDll -> '%(Filename)')">
+        <HintPath>%(_GameLibDll.FullPath)</HintPath>
+        <Private>false</Private>
+      </Reference>
+    </ItemGroup>
+  </Target>
 
 </Project>
