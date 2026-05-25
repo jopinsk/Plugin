@@ -159,7 +159,7 @@ namespace WelcomePlugin
             }
         }
 
-        private void OnRoundStarted(RoundStartedEventArgs ev)
+        private void OnRoundStarted()
         {
             int counted = 0;
             foreach (Player p in Player.List)
