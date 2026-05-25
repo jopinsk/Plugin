@@ -19,7 +19,7 @@
   <!-- 1) Download and unzip the SCP:SL game reference assemblies before resolving references. -->
   <Target Name="DownloadGameLibs"
           BeforeTargets="ResolveAssemblyReferences"
-          Condition="!Exists('$(GameLibsDir)\Assembly-CSharp.dll')">
+          Condition="!Exists('$(GameLibsDir)\dll_libs\Assembly-CSharp.dll') And !Exists('$(GameLibsDir)\Assembly-CSharp.dll')">
     <MakeDir Directories="$(GameLibsDir)" />
     <Message Importance="high" Text="Downloading game libs from $(GameLibsUrl) ..." />
     <Exec Command="curl -fL -o &quot;$(GameLibsDir)\dll_libs.zip&quot; &quot;$(GameLibsUrl)&quot;" />
@@ -27,17 +27,20 @@
     <Delete Files="$(GameLibsDir)\dll_libs.zip" />
   </Target>
 
-  <!-- 2) Dynamically reference every DLL extracted into libs/ -->
+  <!-- 2) Reference ONLY Assembly-CSharp.dll. The archive contains a full server dump including
+       LabApi-Publicized.dll (conflicts with NuGet LabApi.dll), Assembly-CSharp-Publicized.dll
+       (duplicate types), and many third-party plugins, all of which would break the build. -->
   <Target Name="AddGameLibReferences"
           BeforeTargets="ResolveAssemblyReferences"
           DependsOnTargets="DownloadGameLibs">
     <ItemGroup>
-      <_GameLibDll Include="$(GameLibsDir)\**\*.dll" />
+      <_GameLibDll Include="$(GameLibsDir)\**\Assembly-CSharp.dll" />
       <Reference Include="@(_GameLibDll -> '%(Filename)')">
         <HintPath>%(_GameLibDll.FullPath)</HintPath>
         <Private>false</Private>
       </Reference>
     </ItemGroup>
+    <Message Importance="high" Text="Referenced game lib: %(_GameLibDll.FullPath)" />
   </Target>
 
 </Project>
