@@ -4,26 +4,44 @@ namespace WelcomePlugin
 {
     public sealed class Config
     {
-        [Description("Включить плагин.")]
+        [Description("Master toggle for the plugin.")]
         public bool IsEnabled { get; set; } = true;
 
-        [Description("Включить отладочные логи.")]
+        [Description("Enable verbose debug logging.")]
         public bool Debug { get; set; } = false;
 
-        [Description("Текст приветствия. %player% — ник игрока.")]
+        [Description("Welcome broadcast text. {nick} = player nickname.")]
         public string WelcomeMessage { get; set; } =
-            "<b>Добро пожаловать, <color=#7FFFD4>%player%</color>!</b>\n<size=80%>Приятной игры :)</size>";
+            "<b>Welcome, <color=#7FFFD4>{nick}</color>!</b>";
 
-        [Description("Длительность приветственного broadcast, сек.")]
-        public ushort BroadcastDuration { get; set; } = 8;
+        [Description("Show personal stats summary in the join broadcast.")]
+        public bool ShowStatsOnJoin { get; set; } = true;
 
-        [Description("Оповещать остальных игроков о заходе.")]
+        [Description("Announce other players' joins.")]
         public bool AnnounceJoin { get; set; } = true;
 
-        [Description("Оповещать остальных игроков о выходе.")]
+        [Description("Announce other players' leaves.")]
         public bool AnnounceLeave { get; set; } = true;
 
-        [Description("Длительность hint-оповещения, сек.")]
-        public ushort HintDuration { get; set; } = 5;
+        [Description("Show top-3 killers broadcast at round end.")]
+        public bool ShowRoundEndLeaderboard { get; set; } = true;
+
+        [Description("Duration of personal broadcasts (seconds).")]
+        public ushort BroadcastDuration { get; set; } = 8;
+
+        [Description("Duration of join/leave announcements (seconds).")]
+        public ushort AnnounceDuration { get; set; } = 5;
+
+        [Description("Duration of the round-end leaderboard broadcast (seconds).")]
+        public ushort LeaderboardDuration { get; set; } = 15;
+
+        [Description("Pretty-print the saved stats JSON file.")]
+        public bool PrettyPrintJson { get; set; } = true;
+
+        [Description("Auto-save stats every N kills. 0 = save only at round-end / disconnect.")]
+        public int AutoSaveEveryKills { get; set; } = 25;
+
+        [Description("Track friendly-fire kills as a separate counter.")]
+        public bool TrackFriendlyFire { get; set; } = true;
     }
 }
