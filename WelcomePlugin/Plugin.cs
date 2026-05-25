@@ -47,17 +47,19 @@ namespace WelcomePlugin
             if (Config.Debug)
                 Logger.Info($"[WelcomePlugin] {player.Nickname} ({player.UserId}) joined.");
 
-            string text = Config.WelcomeMessage.Replace("%player%", player.Nickname);
-            player.SendBroadcast(text, Config.BroadcastDuration);
+            // Личный приветственный broadcast
+            string welcomeText = Config.WelcomeMessage.Replace("%player%", player.Nickname);
+            player.SendBroadcast(welcomeText, Config.BroadcastDuration);
 
+            // Broadcast остальным
             if (!Config.AnnounceJoin)
                 return;
 
-            string hint = $"<color=#7CFC00>+ {player.Nickname}</color> присоединился к серверу";
+            string joinText = $"<color=#7CFC00>+ {player.Nickname}</color> присоединился к серверу";
             foreach (Player other in Player.List)
             {
                 if (other == player || other.IsHost) continue;
-                other.SendHint(hint, Config.HintDuration);
+                other.SendBroadcast(joinText, Config.HintDuration);
             }
         }
 
@@ -70,11 +72,11 @@ namespace WelcomePlugin
             if (Config.Debug)
                 Logger.Info($"[WelcomePlugin] {player.Nickname} ({player.UserId}) left.");
 
-            string hint = $"<color=#FF6B6B>- {player.Nickname}</color> покинул сервер";
+            string leaveText = $"<color=#FF6B6B>- {player.Nickname}</color> покинул сервер";
             foreach (Player other in Player.List)
             {
                 if (other == player || other.IsHost) continue;
-                other.SendHint(hint, Config.HintDuration);
+                other.SendBroadcast(leaveText, Config.HintDuration);
             }
         }
     }
