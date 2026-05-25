@@ -19,7 +19,7 @@
   <!-- 1) Download and unzip the SCP:SL game reference assemblies before resolving references. -->
   <Target Name="DownloadGameLibs"
           BeforeTargets="ResolveAssemblyReferences"
-          Condition="!Exists('$(GameLibsDir)\dll_libs\Assembly-CSharp.dll') And !Exists('$(GameLibsDir)\Assembly-CSharp.dll')">
+          Condition="!Exists('$(GameLibsDir)\dll_libs\Assembly-CSharp-Publicized.dll') And !Exists('$(GameLibsDir)\Assembly-CSharp-Publicized.dll')">
     <MakeDir Directories="$(GameLibsDir)" />
     <Message Importance="high" Text="Downloading game libs from $(GameLibsUrl) ..." />
     <Exec Command="curl -fL -o &quot;$(GameLibsDir)\dll_libs.zip&quot; &quot;$(GameLibsUrl)&quot;" />
@@ -27,14 +27,16 @@
     <Delete Files="$(GameLibsDir)\dll_libs.zip" />
   </Target>
 
-  <!-- 2) Reference ONLY Assembly-CSharp.dll. The archive contains a full server dump including
-       LabApi-Publicized.dll (conflicts with NuGet LabApi.dll), Assembly-CSharp-Publicized.dll
-       (duplicate types), and many third-party plugins, all of which would break the build. -->
+  <!-- 2) Reference ONLY Assembly-CSharp-Publicized.dll.
+       The archive contains the publicized variant whose internal AssemblyDef is still
+       "Assembly-CSharp", so it satisfies LabApi's reference to the Assembly-CSharp identity.
+       LabApi-Publicized.dll and the third-party plugin DLLs are intentionally NOT referenced
+       (they would conflict with the NuGet LabApi package). -->
   <Target Name="AddGameLibReferences"
           BeforeTargets="ResolveAssemblyReferences"
           DependsOnTargets="DownloadGameLibs">
     <ItemGroup>
-      <_GameLibDll Include="$(GameLibsDir)\**\Assembly-CSharp.dll" />
+      <_GameLibDll Include="$(GameLibsDir)\**\Assembly-CSharp-Publicized.dll" />
       <Reference Include="@(_GameLibDll -> '%(Filename)')">
         <HintPath>%(_GameLibDll.FullPath)</HintPath>
         <Private>false</Private>
